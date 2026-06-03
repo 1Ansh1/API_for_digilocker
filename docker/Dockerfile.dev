@@ -1,0 +1,30 @@
+FROM python:3.11-slim AS dev
+
+LABEL maintainer="DigiLocker Team"
+LABEL description="Development image for DigiLocker Verification API"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Install system dependencies required by asyncpg and cryptography
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies (core + dev)
+COPY pyproject.toml ./
+RUN pip install -e ".[dev]"
+
+# Copy application source
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]

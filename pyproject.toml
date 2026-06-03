@@ -1,0 +1,101 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "digilocker-verification-api"
+version = "0.1.0"
+description = "FastAPI service for DigiLocker document verification via OAuth 2.0"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "DigiLocker Team" }]
+keywords = ["digilocker", "verification", "fastapi", "oauth2"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Typing :: Typed",
+]
+dependencies = [
+    "fastapi[standard]>=0.115.0,<1",
+    "uvicorn[standard]>=0.32.0,<1",
+    "pydantic>=2.10.0,<3",
+    "pydantic-settings>=2.7.0,<3",
+    "sqlalchemy[asyncio]>=2.0.36,<3",
+    "asyncpg>=0.30.0,<1",
+    "alembic>=1.14.0,<2",
+    "redis[hiredis]>=5.2.0,<6",
+    "httpx>=0.28.0,<1",
+    "structlog>=24.4.0,<25",
+    "prometheus-client>=0.21.0,<1",
+    "opentelemetry-api>=1.29.0,<2",
+    "opentelemetry-sdk>=1.29.0,<2",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "pyjwt[crypto]>=2.10.0,<3",
+    "cryptography>=44.0.0,<45",
+    "python-multipart>=0.0.18,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0,<9",
+    "pytest-asyncio>=0.24.0,<1",
+    "pytest-cov>=6.0.0,<7",
+    "httpx>=0.28.0,<1",
+    "testcontainers[postgres,redis]>=4.9.0,<5",
+    "factory-boy>=3.3.0,<4",
+    "ruff>=0.8.0,<1",
+    "mypy>=1.13.0,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+markers = [
+    "integration: marks tests requiring external services (deselect with '-m \"not integration\"')",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__",
+]
