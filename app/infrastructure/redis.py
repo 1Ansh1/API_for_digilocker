@@ -7,12 +7,12 @@ for every Redis key used by the DigiLocker Verification API.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import redis.asyncio as aioredis
 
 if TYPE_CHECKING:
-    from app.core.config import Settings
+    from app.config import Settings
 
 __all__ = ["create_redis_pool", "close_redis_pool", "RedisKeyBuilder"]
 
@@ -23,8 +23,8 @@ def create_redis_pool(settings: Settings) -> aioredis.Redis:
     Parameters
     ----------
     settings:
-        Application configuration.  Uses ``redis_url`` for the connection
-        string and ``redis_max_connections`` (default ``20``) to cap the
+        Application configuration.  Uses ``redis.url`` for the connection
+        string and ``redis.max_connections`` (default ``10``) to cap the
         pool size.
 
     Returns
@@ -32,10 +32,13 @@ def create_redis_pool(settings: Settings) -> aioredis.Redis:
     redis.asyncio.Redis
         A Redis client backed by a connection pool.
     """
-    return aioredis.Redis.from_url(
-        url=str(settings.redis_url),
-        decode_responses=True,
-        max_connections=getattr(settings, "redis_max_connections", 20),
+    return cast(
+        aioredis.Redis,
+        aioredis.Redis.from_url(
+            url=settings.redis.url,
+            decode_responses=True,
+            max_connections=settings.redis.max_connections,
+        ),
     )
 
 

@@ -121,4 +121,4 @@ def register_exception_handlers(app: FastAPI) -> None:
     """Attach all exception handlers to the FastAPI application."""
     app.add_exception_handler(DigiLockerError, _handle_digilocker_error)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, _handle_validation_error)  # type: ignore[arg-type]
-    app.add_exception_handler(Exception, _handle_unhandled_exception)  # type: ignore[arg-type]
+    app.add_exception_handler(Exception, _handle_unhandled_exception)

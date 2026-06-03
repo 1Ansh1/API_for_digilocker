@@ -1,9 +1,9 @@
 """Unit tests for the DigiLocker provider interfaces, stub, and mock implementations."""
 
-import pytest
 import jwt
-from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+import pytest
 from jwt.algorithms import RSAAlgorithm
+from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
 
 from app.errors.exceptions import (
     JWKSFetchError,
@@ -40,7 +40,7 @@ async def test_stub_provider() -> None:
     public_key = RSAAlgorithm.from_jwk(jwks["keys"][0])
     payload = jwt.decode(
         token_resp.id_token,
-        public_key,
+        public_key,  # type: ignore[arg-type]
         algorithms=["RS256"],
         audience="stub-client-id",
     )
@@ -75,7 +75,7 @@ async def test_mock_provider_success() -> None:
     public_key = RSAAlgorithm.from_jwk(jwks["keys"][0])
     payload = jwt.decode(
         token_resp.id_token,
-        public_key,
+        public_key,  # type: ignore[arg-type]
         algorithms=["RS256"],
         audience="mock-client-id",
     )
@@ -114,7 +114,7 @@ async def test_mock_provider_invalid_token() -> None:
     with pytest.raises(ExpiredSignatureError):
         jwt.decode(
             token_resp.id_token,
-            public_key,
+            public_key,  # type: ignore[arg-type]
             algorithms=["RS256"],
             audience="mock-client-id",
         )
@@ -141,7 +141,7 @@ async def test_mock_provider_jwks_signature_failure() -> None:
     with pytest.raises(InvalidSignatureError):
         jwt.decode(
             token_resp.id_token,
-            public_key,
+            public_key,  # type: ignore[arg-type]
             algorithms=["RS256"],
             audience="mock-client-id",
         )
@@ -163,7 +163,10 @@ async def test_mock_provider_profile_mismatch() -> None:
     """Test profile mismatch simulation."""
     provider = MockDigiLockerProvider()
 
-    token_resp = await provider.exchange_code(MockDigiLockerProvider.PROFILE_MISMATCH_CODE, "verifier")
+    token_resp = await provider.exchange_code(
+        MockDigiLockerProvider.PROFILE_MISMATCH_CODE,
+        "verifier",
+    )
     assert token_resp.access_token == "mismatch-access-token"
 
     profile = await provider.get_profile(token_resp.access_token)

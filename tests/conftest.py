@@ -8,11 +8,11 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
-import pytest
 import httpx
+import pytest
 
-from app.main import create_app
 from app.config import Settings
+from app.main import create_app
 
 
 @pytest.fixture
@@ -22,10 +22,11 @@ def settings() -> Settings:
     Override environment variables here to isolate tests from
     the host environment.
     """
+    from app.config import ObservabilitySettings
     return Settings(
         environment="testing",
         debug=True,
-        log_level="DEBUG",
+        observability=ObservabilitySettings(log_level="DEBUG"),
     )
 
 

@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 if TYPE_CHECKING:
-    from app.core.config import Settings
+    from app.config import Settings
 
 __all__ = ["create_async_engine", "create_session_factory"]
 
@@ -46,12 +46,11 @@ def create_async_engine(settings: Settings) -> AsyncEngine:
         A configured async engine ready for use.
     """
     return _create_async_engine(
-        url=str(settings.database_url),
+        url=settings.db.async_url,
         echo=settings.debug,
-        pool_size=settings.db_pool_size,
-        max_overflow=settings.db_max_overflow,
+        pool_size=settings.db.pool_size,
+        max_overflow=settings.db.max_overflow,
         pool_pre_ping=True,
-        pool_recycle=settings.db_pool_recycle,
     )
 
 

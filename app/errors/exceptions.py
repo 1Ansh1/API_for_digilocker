@@ -61,7 +61,10 @@ class VerificationAlreadyInProgressError(DigiLockerError):
 
     error_code = ErrorCode.VERIFICATION_ALREADY_IN_PROGRESS
 
-    def __init__(self, message: str = "A verification flow is already active for this user.") -> None:
+    def __init__(
+        self,
+        message: str = "A verification flow is already active for this user.",
+    ) -> None:
         super().__init__(message)
 
 
@@ -93,7 +96,10 @@ class SessionExpiredError(DigiLockerError):
 
     error_code = ErrorCode.SESSION_EXPIRED
 
-    def __init__(self, message: str = "OAuth session has expired. Please initiate a new verification.") -> None:
+    def __init__(
+        self,
+        message: str = "OAuth session has expired. Please initiate a new verification.",
+    ) -> None:
         super().__init__(message)
 
 

@@ -6,7 +6,7 @@ equally well for manual verification during development.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
@@ -22,7 +22,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 
-class HealthStatus(str, Enum):
+class HealthStatus(StrEnum):
     """Possible top-level health states."""
 
     ALIVE = "alive"

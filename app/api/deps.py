@@ -7,12 +7,27 @@ lifespan.
 
 from collections.abc import AsyncGenerator
 
+from typing import cast
+
 import httpx
-from fastapi import Request
+from fastapi import Depends, Request
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-__all__ = ["get_db_session", "get_redis", "get_http_client"]
+from app.config import get_settings
+from app.errors.exceptions import UnauthorizedError
+from app.repositories.audit import AuditRepository
+from app.repositories.verification import VerificationRepository
+from app.services.oauth import OAuthService
+from app.services.verification import VerificationService
+
+__all__ = [
+    "get_db_session",
+    "get_redis",
+    "get_http_client",
+    "get_current_user_id",
+    "get_verification_service",
+]
 
 
 async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
@@ -33,9 +48,44 @@ async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]
 
 async def get_redis(request: Request) -> Redis:
     """Return the app-wide Redis connection pool."""
-    return request.app.state.redis
+    return cast(Redis, request.app.state.redis)
 
 
 async def get_http_client(request: Request) -> httpx.AsyncClient:
     """Return the app-wide HTTP client."""
-    return request.app.state.http_client
+    return cast(httpx.AsyncClient, request.app.state.http_client)
+
+
+def get_current_user_id(request: Request) -> str:
+    """Retrieve the user ID from the request state.
+
+    Normally set by JWT authentication middleware.
+    Falls back to checking the 'X-User-Id' header for offline / local testing.
+    """
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        user_id = request.headers.get("x-user-id")
+    if not user_id:
+        raise UnauthorizedError("Missing or invalid authentication credentials.")
+    return user_id
+
+
+async def get_verification_service(
+    db_session: AsyncSession = Depends(get_db_session),
+    redis: Redis = Depends(get_redis),
+) -> VerificationService:
+    """Dependency provider for VerificationService."""
+    settings = get_settings()
+    oauth_service = OAuthService(settings)
+    audit_repository = AuditRepository(db_session)
+    verification_repository = VerificationRepository(db_session)
+
+    return VerificationService(
+        db_session=db_session,
+        redis=redis,
+        settings=settings,
+        oauth_service=oauth_service,
+        audit_repository=audit_repository,
+        verification_repository=verification_repository,
+    )
+

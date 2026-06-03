@@ -1,5 +1,6 @@
 """Append-only data access layer for audit events."""
 
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +26,7 @@ class AuditRepository:
         event_type: AuditEventType,
         status: str | None = None,
         error_code: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> AuditEvent:
         """Append a new audit event.
 
