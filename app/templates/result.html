@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Result - DigiLocker Verification Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <h1>Verification Status</h1>
+  <p class="lead">Detailed report of the identity verification session.</p>
+
+  <div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+      <div>
+        <h3 style="margin-bottom: 0.25rem;">Session UUID</h3>
+        <span style="font-family: monospace; font-size: 0.95rem; color: var(--text-secondary);">{{ verification.id }}</span>
+      </div>
+      <div>
+        {% if verification.status == 'VERIFIED' %}
+          <span class="badge badge-verified">{{ verification.status }}</span>
+        {% elif verification.status == 'FAILED' %}
+          <span class="badge badge-failed">{{ verification.status }}</span>
+        {% else %}
+          <span class="badge badge-warning">{{ verification.status }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Status Specific Layouts -->
+    {% if verification.status == 'VERIFIED' %}
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="color: var(--success); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-inline" style="width: 24px; height: 24px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          Identity Cryptographically Verified
+        </h3>
+
+        <!-- Demographic PII Data Card -->
+        {% if result %}
+          <div class="card" style="background-color: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); margin-bottom: 1.5rem;">
+            <h4 style="color: var(--success); font-size: 1rem; margin-bottom: 0.75rem;">Verified Demographics (PII)</h4>
+            <div class="kv-list">
+              <div class="kv-item">
+                <span class="kv-key">Full Name</span>
+                <span class="kv-value" style="color: var(--text-primary);">{{ result.name }}</span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-key">Date of Birth</span>
+                <span class="kv-value" style="color: var(--text-primary);">{{ result.dob }}</span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-key">Gender</span>
+                <span class="kv-value" style="color: var(--text-primary);">
+                  {% if result.gender == 'M' %}Male (M)
+                  {% elif result.gender == 'F' %}Female (F)
+                  {% else %}{{ result.gender }}
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid rgba(16, 185, 129, 0.2); padding-top: 0.5rem; display: flex; gap: 0.5rem; align-items: flex-start;">
+              <svg xmlns="http://www.w3.org/2000/svg" style="fill: var(--warning); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              <span><strong>Privacy Policy:</strong> Cleartext demographic details (PII) are automatically pruned from our database after 5 minutes (300s). Reload this page later to see the pruning in effect!</span>
+            </div>
+          </div>
+        {% else %}
+          <div class="card" style="background-color: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2); margin-bottom: 1.5rem;">
+            <h4 style="color: var(--warning); font-size: 1rem; margin-bottom: 0.75rem;">Verified Demographics (PII)</h4>
+            <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <span class="badge badge-warning" style="margin-top: 2px;">PRUNED</span>
+              <p style="font-size: 0.875rem; margin-bottom: 0;">
+                Cleartext PII has been permanently deleted from the database in compliance with the data retention policy. Only the cryptographic proofs and logs below are retained.
+              </p>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Cryptographic Proofs -->
+        <h4 style="font-size: 1rem; margin-bottom: 0.75rem;">Cryptographic Hash Assertions</h4>
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-key">Hashed DigiLocker ID</span>
+            <span class="kv-value" style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">{{ verification.digilocker_id_hash }}</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">Composite Proof Hash</span>
+            <span class="kv-value" style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">{{ verification.proof_hash }}</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">Verification Completed At</span>
+            <span class="kv-value">{{ verification.completed_at.strftime('%Y-%m-%d %H:%M:%S UTC') if verification.completed_at else 'N/A' }}</span>
+          </div>
+        </div>
+        <p style="font-size: 0.8rem; margin-top: 0.75rem; margin-bottom: 0;">
+          The composite proof hash is a HMAC-SHA256 signature generated over the user details using a secure server key. This allows verification validity queries without exposing cleartext PII.
+        </p>
+      </div>
+
+    {% elif verification.status == 'FAILED' %}
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="color: var(--danger); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-inline" style="width: 24px; height: 24px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          Verification Attempt Failed
+        </h3>
+        
+        <div class="kv-list">
+          <div class="kv-item">
+            <span class="kv-key">Error Code</span>
+            <span class="kv-value" style="color: var(--danger); font-family: monospace;">{{ verification.error_code }}</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">Detailed Message</span>
+            <span class="kv-value" style="color: var(--text-primary); text-align: left;">{{ verification.error_message }}</span>
+          </div>
+          <div class="kv-item">
+            <span class="kv-key">Failed At</span>
+            <span class="kv-value">{{ verification.completed_at.strftime('%Y-%m-%d %H:%M:%S UTC') if verification.completed_at else 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+      <div style="margin-bottom: 1.5rem; text-align: center; padding: 2rem 0;">
+        <div style="display: inline-block; animation: spin 2s linear infinite; margin-bottom: 1rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; fill: var(--warning);" viewBox="0 0 24 24"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L4.7 18.7C3.62 17.02 3 15.03 3 13c0-5.52 4.48-10 10-10zm7.76 5.74l1.46-1.46C20.38 8.62 21 6.63 21 4.6c0-5.52-4.48-10-10-10V.6l-4 4 4 4V5.6c4.42 0 8 3.58 8 8 0 1.57-.46 3.03-1.24 4.26z"/></svg>
+        </div>
+        <h3>Session status: {{ verification.status }}</h3>
+        <p>The verification session is active but has not completed. If you were redirected, please complete the login/consent steps at the Identity Provider.</p>
+      </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 1rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; margin-top: 1.5rem;">
+      <a href="/ui/audit-timeline?verification_id={{ verification.id }}" class="btn btn-primary" style="flex: 1;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-inline" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        View Audit Timeline
+      </a>
+      <a href="/ui/verification/start" class="btn btn-secondary" style="flex: 1;">
+        Start New Verification
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}

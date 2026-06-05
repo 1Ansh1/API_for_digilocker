@@ -1,9 +1,14 @@
 """FastAPI endpoints for initiating and tracking DigiLocker identity verifications."""
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 
 from app.api.deps import get_current_user_id, get_verification_service
-from app.schemas.verification import VerificationInitiateRequest, VerificationInitiateResponse
+from app.models import VerificationResult
+from app.schemas.verification import (
+    VerificationInitiateRequest,
+    VerificationInitiateResponse,
+    VerificationStatusResponse,
+)
 from app.services.verification import VerificationService
 
 __all__ = ["router"]
@@ -50,4 +55,52 @@ async def initiate_verification(
     return VerificationInitiateResponse(
         verification_id=verification_id,
         authorization_url=authorization_url,
+    )
+
+
+@router.get(
+    "/status/{verification_id}",
+    response_model=VerificationStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get verification session status",
+    description=(
+        "Retrieve the current status, verification time, and "
+        "composite proof hash of a session."
+    ),
+)
+async def get_verification_status(
+    verification_id: str,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user_id),
+    verification_service: VerificationService = Depends(get_verification_service),
+) -> VerificationStatusResponse:
+    """FastAPI endpoint to query a DigiLocker verification status."""
+    verification = await verification_service.get_verification_status(
+        verification_id=verification_id,
+        user_id=user_id,
+    )
+
+    # Queue pruning task for expired PII data
+    background_tasks.add_task(verification_service.prune_expired_results)
+
+    # Attempt to fetch detailed verification result if verified
+    name, dob, gender = None, None, None
+    if verification.status == "VERIFIED":
+        result = await verification_service.get_verification_result(
+            verification_id=verification.id,
+            user_id=user_id,
+        )
+        if isinstance(result, VerificationResult):
+            name = result.name
+            dob = result.dob
+            gender = result.gender
+
+    return VerificationStatusResponse(
+        id=str(verification.id),
+        status=verification.status,
+        verified_at=verification.completed_at,
+        proof_hash=verification.proof_hash,
+        name=name,
+        dob=dob,
+        gender=gender,
     )

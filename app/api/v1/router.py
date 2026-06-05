@@ -6,7 +6,7 @@ mount a single router for the entire version.
 
 from fastapi import APIRouter
 
-from app.api.v1 import health, verification
+from app.api.v1 import callback, health, verification
 
 __all__ = ["api_v1_router", "root_health_router"]
 
@@ -21,9 +21,11 @@ api_v1_router.include_router(
     prefix="/verification",
     tags=["verification"],
 )
-
-# Future sub-routers:
-# api_v1_router.include_router(callback.router, prefix="/callback", tags=["callback"])
+api_v1_router.include_router(
+    callback.router,
+    prefix="/callback",
+    tags=["callback"],
+)
 
 # ---------------------------------------------------------------------------
 # Root health router (for Kubernetes probes at /health/*)

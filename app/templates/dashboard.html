@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DigiLocker Verification Platform{% endblock %}
+
+{% block content %}
+<h1>Metrics Dashboard</h1>
+<p class="lead">Real-time database statistics and Prometheus-backed service metrics.</p>
+
+<!-- Stat Boxes Grid -->
+<div class="grid-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+  <div class="card metric-box">
+    <div class="metric-label">Total Attempts</div>
+    <div class="metric-value">{{ metrics.total_attempts }}</div>
+    <p style="font-size: 0.8rem; margin-bottom: 0;">Total database verification flows</p>
+  </div>
+
+  <div class="card metric-box">
+    <div class="metric-label">Success Rate</div>
+    <div class="metric-value" style="color: var(--success);">{{ "%.1f" | format(metrics.success_rate) }}%</div>
+    <p style="font-size: 0.8rem; margin-bottom: 0;">{{ metrics.success_count }} of {{ metrics.total_attempts }} verifications</p>
+  </div>
+
+  <div class="card metric-box">
+    <div class="metric-label">Failed Runs</div>
+    <div class="metric-value" style="color: var(--danger);">{{ metrics.failure_count }}</div>
+    <p style="font-size: 0.8rem; margin-bottom: 0;">Rejected or aborted sessions</p>
+  </div>
+
+  <div class="card metric-box">
+    <div class="metric-label">Active / Pending</div>
+    <div class="metric-value" style="color: var(--warning);">{{ metrics.active_count }}</div>
+    <p style="font-size: 0.8rem; margin-bottom: 0;">In-flight or incomplete flows</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Chart 1: Failure Distribution -->
+  <div class="card">
+    <h3>Top Error Modes</h3>
+    <p>Distribution of verification failures by error code.</p>
+    
+    {% if metrics.errors_distribution %}
+      <div class="bar-chart">
+        {% for error_code, count in metrics.errors_distribution.items() %}
+          {% set percent = (count / metrics.failure_count) * 100 if metrics.failure_count > 0 else 0 %}
+          <div class="bar-row">
+            <div class="bar-label" style="font-family: monospace; font-size: 0.8rem;">{{ error_code }}</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: {{ percent }}%; background-color: var(--danger);"></div>
+            </div>
+            <div class="bar-value">{{ count }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem 0; color: var(--text-secondary);">
+        <p>No failures recorded in database. System is healthy!</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Chart 2: Telemetry / System metrics -->
+  <div class="card">
+    <h3>System Telemetry</h3>
+    <p>Internal health counters from memory cache and rate limiters.</p>
+
+    <div class="kv-list" style="margin-top: 1.5rem;">
+      <div class="kv-item">
+        <span class="kv-key">JWKS Signature Cache Hits</span>
+        <span class="kv-value" style="color: var(--success);">{{ metrics.jwks_hits }}</span>
+      </div>
+      <div class="kv-item">
+        <span class="kv-key">JWKS Signature Cache Misses</span>
+        <span class="kv-value" style="color: var(--warning);">{{ metrics.jwks_misses }}</span>
+      </div>
+      <div class="kv-item">
+        <span class="kv-key">Rate Limit Violations Rejected</span>
+        <span class="kv-value" style="color: var(--danger);">{{ metrics.rate_limit_hits }}</span>
+      </div>
+      <div class="kv-item">
+        <span class="kv-key">Active Concurrency Locks (Redis)</span>
+        <span class="kv-value" style="color: var(--info);">{{ metrics.active_sessions }}</span>
+      </div>
+    </div>
+    
+    <div style="margin-top: 1.5rem; background-color: #0b0f19; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--card-border);">
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0;">
+        These values are sourced from the Prometheus `REGISTRY` object in-memory and represent live operational states.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

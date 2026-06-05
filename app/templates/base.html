@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DigiLocker Verification Platform{% endblock %}</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="navbar-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        DigiLocker Verify
+      </a>
+      <ul class="navbar-menu">
+        <li><a href="/" class="navbar-link {% if active_page == 'home' %}active{% endif %}">Home</a></li>
+        <li><a href="/ui/verification/start" class="navbar-link {% if active_page == 'start' %}active{% endif %}">Verify Now</a></li>
+        <li><a href="/ui/audit-timeline" class="navbar-link {% if active_page == 'timeline' %}active{% endif %}">Audit Timeline</a></li>
+        <li><a href="/ui/dashboard" class="navbar-link {% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+        <li><a href="/ui/architecture" class="navbar-link {% if active_page == 'architecture' %}active{% endif %}">Architecture</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

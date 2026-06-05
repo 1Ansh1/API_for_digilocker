@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Start Verification - DigiLocker Verification Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+  <h1>Initiate Identity Verification</h1>
+  <p class="lead">Start the DigiLocker verification flow. This form configures the session and initiates the OIDC authorization code request with PKCE.</p>
+
+  {% if error_message %}
+  <div class="card" style="border-color: var(--danger-border); background-color: var(--danger-bg); margin-bottom: 1.5rem; padding: 1rem;">
+    <p style="color: var(--danger); font-weight: 600; margin-bottom: 0;">Error: {{ error_message }}</p>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <form action="/ui/verification/initiate" method="POST">
+      <div class="form-group">
+        <label for="user_id" class="form-label">User ID (External Identifier)</label>
+        <input type="text" id="user_id" name="user_id" class="form-control" value="user_demo_123" required>
+        <p style="font-size: 0.8rem; margin-top: 0.25rem; margin-bottom: 0;">
+          In production, this is fetched securely from the authenticated session context.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="redirect_uri" class="form-label">OAuth Redirect Callback URI</label>
+        <input type="text" id="redirect_uri" name="redirect_uri" class="form-control" value="http://localhost:8000/api/v1/callback" readonly>
+        <p style="font-size: 0.8rem; margin-top: 0.25rem; margin-bottom: 0;">
+          The backend callback endpoint where the Identity Provider returns the code and state.
+        </p>
+      </div>
+
+      <div style="background-color: #0b0f19; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--card-border);">
+        <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">Under the hood, the backend will:</h4>
+        <ul style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.25rem;">
+          <li>Verify rate limits for the User ID and IP address.</li>
+          <li>Acquire a lock in Redis to prevent concurrent verification flows.</li>
+          <li>Generate a unique CSRF <strong>State</strong> and replay-prevention <strong>Nonce</strong>.</li>
+          <li>Generate PKCE <strong>Code Verifier</strong> and cryptographic <strong>Code Challenge (S256)</strong>.</li>
+          <li>Persist session details in Redis with a 10-minute TTL.</li>
+          <li>Write append-only Audit Events to PostgreSQL.</li>
+        </ul>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-large">
+        Redirect to DigiLocker Provider &rarr;
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

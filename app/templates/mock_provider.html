@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Mock DigiLocker IDP - Authorization Server{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+  <!-- Mock IdP header banner -->
+  <div style="background: linear-gradient(to right, #ea580c, #f97316); padding: 1.5rem; border-radius: 12px 12px 0 0; text-align: center; border: 1px solid #ea580c; border-bottom: none;">
+    <h1 style="color: #ffffff; font-size: 1.75rem; margin-bottom: 0.25rem; font-weight: 700; background: none; -webkit-text-fill-color: initial;">
+      DigiLocker Mock Identity Provider
+    </h1>
+    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 0; font-size: 0.9rem; font-weight: 500;">
+      Simulated Authorization & Consent Gateway
+    </p>
+  </div>
+
+  <div class="card" style="border-radius: 0 0 12px 12px; border-top: none;">
+    <div style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
+      <p style="margin-bottom: 0.5rem;">
+        An application is requesting permission to access your verified identity credentials.
+      </p>
+      <div style="background-color: #0b0f19; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.25rem;">
+        <div><span style="color: var(--text-secondary);">Client ID:</span> {{ client_id or "digilocker-verification-api" }}</div>
+        <div><span style="color: var(--text-secondary);">OAuth State:</span> <span style="color: #38bdf8;">{{ state }}</span></div>
+        <div><span style="color: var(--text-secondary);">Nonce Token:</span> <span style="color: #38bdf8;">{{ nonce }}</span></div>
+        <div><span style="color: var(--text-secondary);">Scope:</span> openid, profile</div>
+      </div>
+    </div>
+
+    <h3>Select a Simulation Scenario</h3>
+    <p style="margin-bottom: 1.5rem;">
+      Click any scenario below to simulate the provider response. The browser will be redirected back to the app callback.
+    </p>
+
+    <div class="mock-provider-options">
+      <!-- 1. Success Path -->
+      <a href="{{ redirect_uri }}?code=SUCCESS_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--success);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--success);">Happy Path (Verification Success)</div>
+          <div class="mock-provider-btn-desc">Returns a valid code. Code exchange yields a valid ID token and matching demographic profile for John Doe.</div>
+        </div>
+        <span style="font-weight: 700; color: var(--success); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 2. Expired Code -->
+      <a href="{{ redirect_uri }}?code=EXPIRED_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--danger);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--danger);">Simulate Expired Code</div>
+          <div class="mock-provider-btn-desc">Returns a code that fails exchange on the backend with a code expired error (TokenExchangeError).</div>
+        </div>
+        <span style="font-weight: 700; color: var(--danger); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 3. Expired ID Token -->
+      <a href="{{ redirect_uri }}?code=INVALID_TOKEN_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--danger);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--danger);">Simulate Invalid ID Token</div>
+          <div class="mock-provider-btn-desc">Returns an expired token payload (exp in the past). Verification fails during claim validation.</div>
+        </div>
+        <span style="font-weight: 700; color: var(--danger); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 4. Signature Failure -->
+      <a href="{{ redirect_uri }}?code=JWKS_FAIL_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--danger);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--danger);">Simulate Signature Validation Failure</div>
+          <div class="mock-provider-btn-desc">Signs the ID token with an untrusted key not found in the provider's JWKS. Validation fails.</div>
+        </div>
+        <span style="font-weight: 700; color: var(--danger); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 5. Demographic Mismatch -->
+      <a href="{{ redirect_uri }}?code=PROFILE_MISMATCH_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--warning);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--warning);">Simulate Demographic Profile Mismatch</div>
+          <div class="mock-provider-btn-desc">Returns claims for a user, but demographic profile query returns mismatched details (IdTokenInvalidError).</div>
+        </div>
+        <span style="font-weight: 700; color: var(--warning); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 6. Provider Timeout -->
+      <a href="{{ redirect_uri }}?code=TIMEOUT_CODE:{{ nonce }}&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--danger);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--danger);">Simulate Provider Network Timeout</div>
+          <div class="mock-provider-btn-desc">Simulates a timeout/unavailability error during token exchange (ProviderUnavailableError).</div>
+        </div>
+        <span style="font-weight: 700; color: var(--danger); font-size: 1.25rem;">&rarr;</span>
+      </a>
+
+      <!-- 7. Cancel / Access Denied -->
+      <a href="{{ redirect_uri }}?error=access_denied&error_description=User+denied+authorization&state={{ state }}" class="mock-provider-btn" style="border-left: 4px solid var(--text-secondary);">
+        <div>
+          <div class="mock-provider-btn-title" style="color: var(--text-secondary);">Simulate User Cancel / Access Denied</div>
+          <div class="mock-provider-btn-desc">Simulates user clicking "Cancel". Redirects back with access_denied OAuth parameters.</div>
+        </div>
+        <span style="font-weight: 700; color: var(--text-secondary); font-size: 1.25rem;">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

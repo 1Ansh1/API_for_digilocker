@@ -74,6 +74,11 @@ class MockDigiLockerProvider(DigiLockerProvider):
         - PROFILE_MISMATCH_CODE: Returns access token that yields mismatched profile.
         - TIMEOUT_CODE: Simulates timeout.
         """
+        # Check if a nonce is appended to the code parameter (e.g. "SUCCESS_CODE:nonce-value")
+        nonce = None
+        if ":" in code:
+            code, nonce = code.split(":", 1)
+
         if self.simulate_token_exchange_timeout or code == self.TIMEOUT_CODE:
             # Simulate a timeout by raising a timeout error or ProviderUnavailableError
             raise ProviderUnavailableError("Connection timed out while exchanging code.")
@@ -96,6 +101,8 @@ class MockDigiLockerProvider(DigiLockerProvider):
                 "dob": "1980-01-01",
                 "gender": "M",
             }
+            if nonce:
+                payload["nonce"] = nonce
             headers = {"kid": self._kid}
             id_token = jwt.encode(payload, self._private_key, algorithm="RS256", headers=headers)
             access_token = "expired-access-token"
@@ -112,6 +119,8 @@ class MockDigiLockerProvider(DigiLockerProvider):
                 "dob": "1990-01-01",
                 "gender": "M",
             }
+            if nonce:
+                payload["nonce"] = nonce
             headers = {"kid": self._bad_kid}
             id_token = jwt.encode(
                 payload,
@@ -135,6 +144,8 @@ class MockDigiLockerProvider(DigiLockerProvider):
                 "dob": "1900-01-01",  # Mismatching date of birth
                 "gender": "T",
             }
+            if nonce:
+                payload["nonce"] = nonce
             headers = {"kid": self._kid}
             id_token = jwt.encode(payload, self._private_key, algorithm="RS256", headers=headers)
             access_token = "mismatch-access-token"
@@ -151,6 +162,8 @@ class MockDigiLockerProvider(DigiLockerProvider):
                 "dob": "1990-01-01",
                 "gender": "M",
             }
+            if nonce:
+                payload["nonce"] = nonce
             headers = {"kid": self._kid}
             id_token = jwt.encode(payload, self._private_key, algorithm="RS256", headers=headers)
             access_token = "valid-access-token"
@@ -187,7 +200,7 @@ class MockDigiLockerProvider(DigiLockerProvider):
 
         if access_token == "mismatch-access-token":
             return DigiLockerProfile(
-                digilockerid="mock-digilocker-id-mismatch",
+                digilockerid="mock-digilocker-id-mismatch-different",
                 name="Mismatched Profile User",
                 dob="1900-01-01",
                 gender="T",

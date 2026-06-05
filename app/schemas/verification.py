@@ -25,3 +25,7 @@ class VerificationStatusResponse(BaseModel):
     status: str
     verified_at: datetime | None = None
     proof_hash: str | None = None
+    name: str | None = None
+    dob: str | None = None
+    gender: str | None = None
+

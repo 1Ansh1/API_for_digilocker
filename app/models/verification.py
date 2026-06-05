@@ -69,6 +69,13 @@ class Verification(TimestampMixin, Base):
         back_populates="verification",
         lazy="selectin",
     )
+    verification_result: Mapped["VerificationResult | None"] = relationship(
+        "VerificationResult",
+        back_populates="verification",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     __table_args__ = (
         Index("ix_verifications_user_id_status", "user_id", "status"),
@@ -80,3 +87,5 @@ class Verification(TimestampMixin, Base):
 
 # Resolve forward reference
 from app.models.audit_event import AuditEvent  # noqa: E402, F811
+from app.models.verification_result import VerificationResult  # noqa: E402
+

@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -24,6 +25,7 @@ from app.api.v1.router import api_v1_router, root_health_router
 from app.config import Settings, get_settings
 from app.errors.handlers import register_exception_handlers
 from app.middleware.request_id import RequestIDMiddleware
+from app.ui.router import ui_router
 
 __all__ = ["create_app"]
 
@@ -76,6 +78,14 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         decode_responses=True,
     )
     app.state.redis = redis
+
+    # Clear stale JWKS cache in development/mock mode to avoid signature failures across restarts
+    if settings.environment == "development" or settings.debug:
+        try:
+            await redis.delete("digilocker:jwks")
+            logger.info("Cleared stale JWKS cache in Redis")
+        except Exception as e:
+            logger.warning("Failed to clear stale JWKS cache in Redis: %s", e)
 
     # -- HTTP client for outbound calls to DigiLocker -----------------------
     http_client = httpx.AsyncClient(
@@ -134,9 +144,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.add_middleware(RequestIDMiddleware)
 
+    # -- Static files --------------------------------------------------------
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
     # -- Routers -------------------------------------------------------------
     app.include_router(api_v1_router)
     app.include_router(root_health_router)
+    app.include_router(ui_router)
 
     # -- Exception handlers --------------------------------------------------
     register_exception_handlers(app)

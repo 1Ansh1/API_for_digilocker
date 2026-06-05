@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Home - DigiLocker Verification Platform{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 3.5rem;">
+  <h1>DigiLocker Identity Verification</h1>
+  <p class="lead" style="max-width: 600px; margin: 1rem auto 2rem auto;">
+    A secure, privacy-preserving integration flow utilizing OAuth 2.0, PKCE authorization code exchange, and demographic validation.
+  </p>
+  <div>
+    <a href="/ui/verification/start" class="btn btn-primary btn-large">Start Verification Demo</a>
+    <a href="/ui/architecture" class="btn btn-secondary btn-large" style="margin-left: 1rem;">How it Works</a>
+  </div>
+</div>
+
+<h2>Core Capabilities</h2>
+<div class="grid-3">
+  <div class="card">
+    <div class="card-title-area">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+      </div>
+      <h3>OIDC Identity Assertions</h3>
+    </div>
+    <p>Uses OpenID Connect (OIDC) ID tokens and signature checks to cryptographically verify claims with DigiLocker public JWKS keys.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title-area">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      </div>
+      <h3>Privacy Preservation</h3>
+    </div>
+    <p>Zero persistent storage of cleartext PII (Names, DOB, Genders). Generates one-way cryptographic SHA-256 hashes for identity matching.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title-area">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      </div>
+      <h3>Append-Only Audit Trails</h3>
+    </div>
+    <p>Tracks the session state transitions chronologically with immutable audit logging and system correlation IDs.</p>
+  </div>
+</div>
+
+<h2>Verification Simulation Center</h2>
+<p>To demonstrate robustness, our integrated mock provider allows you to simulate happy paths as well as common errors:</p>
+<div class="grid-2">
+  <div class="card">
+    <h3>Happy Path Demonstration</h3>
+    <p>Initiate a normal flow, log in to our mock provider, grant consent, and verify identity. Validates claims signature using public JWKS, and retrieves profile.</p>
+    <a href="/ui/verification/start" style="font-weight: 600;">Run Happy Path &rarr;</a>
+  </div>
+  
+  <div class="card">
+    <h3>Failure Mode Testing</h3>
+    <p>Test handling of expired authorization codes, missing nonce, bad ID token signature keys, demographic profile mismatches, and timeouts.</p>
+    <a href="/ui/verification/start" style="font-weight: 600;">Simulate Errors &rarr;</a>
+  </div>
+</div>
+{% endblock %}

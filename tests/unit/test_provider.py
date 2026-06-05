@@ -170,7 +170,7 @@ async def test_mock_provider_profile_mismatch() -> None:
     assert token_resp.access_token == "mismatch-access-token"
 
     profile = await provider.get_profile(token_resp.access_token)
-    assert profile.digilockerid == "mock-digilocker-id-mismatch"
+    assert profile.digilockerid == "mock-digilocker-id-mismatch-different"
     assert profile.name == "Mismatched Profile User"
     assert profile.dob == "1900-01-01"
 
@@ -200,3 +200,23 @@ async def test_mock_provider_timeouts() -> None:
     provider.simulate_profile_fetch_timeout = True
     with pytest.raises(ProviderUnavailableError):
         await provider.get_profile("valid-access-token")
+
+
+@pytest.mark.asyncio
+async def test_real_provider_not_implemented() -> None:
+    """Verify that RealDigiLockerProvider raises NotImplementedError for all interface methods."""
+    import httpx
+    from app.infrastructure.digilocker.client import RealDigiLockerProvider
+
+    async with httpx.AsyncClient() as client:
+        provider = RealDigiLockerProvider(client, "https://api.digitallocker.gov.in")
+
+        with pytest.raises(NotImplementedError):
+            await provider.exchange_code("code", "verifier")
+
+        with pytest.raises(NotImplementedError):
+            await provider.fetch_jwks()
+
+        with pytest.raises(NotImplementedError):
+            await provider.get_profile("token")
+

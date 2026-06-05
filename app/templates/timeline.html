@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Timeline - DigiLocker Verification Platform{% endblock %}
+
+{% block content %}
+{% if selected_verification %}
+  <!-- Single Verification Session Audit Log -->
+  <div style="margin-bottom: 2rem;">
+    <a href="/ui/audit-timeline" style="font-weight: 600;">&larr; Back to Recent Sessions</a>
+  </div>
+
+  <h1>Session Audit Timeline</h1>
+  <p class="lead">Step-by-step security audit trail for session: <span style="font-family: monospace; font-size: 0.95rem; color: var(--text-primary);">{{ selected_verification.id }}</span></p>
+
+  <div class="card" style="margin-bottom: 2.5rem; padding: 1.25rem;">
+    <div class="kv-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div class="kv-item" style="border: none; padding: 0;">
+        <span class="kv-key">User ID:</span>
+        <span class="kv-value">{{ selected_verification.user_id }}</span>
+      </div>
+      <div class="kv-item" style="border: none; padding: 0;">
+        <span class="kv-key">Current Status:</span>
+        <span class="kv-value">
+          {% if selected_verification.status == 'VERIFIED' %}
+            <span class="badge badge-verified">{{ selected_verification.status }}</span>
+          {% elif selected_verification.status == 'FAILED' %}
+            <span class="badge badge-failed">{{ selected_verification.status }}</span>
+          {% else %}
+            <span class="badge badge-warning">{{ selected_verification.status }}</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="kv-item" style="border: none; padding: 0;">
+        <span class="kv-key">Initiated:</span>
+        <span class="kv-value">{{ selected_verification.initiated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    {% for event in selected_verification.audit_events | sort(attribute='created_at') %}
+      {% set item_class = 'pending' %}
+      {% if event.status == 'VERIFIED' or event.event_type == 'TOKEN_EXCHANGE_COMPLETED' or event.event_type == 'ID_TOKEN_VALIDATED' %}
+        {% set item_class = 'success' %}
+      {% elif event.status == 'FAILED' or 'FAILED' in event.event_type %}
+        {% set item_class = 'failed' %}
+      {% endif %}
+
+      <div class="timeline-item {{ item_class }}">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="timeline-time">
+            {{ event.created_at.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] }} UTC
+          </div>
+          <div class="timeline-title">
+            <span>{{ event.event_type }}</span>
+            <span style="font-size: 0.8rem; color: var(--text-secondary); font-family: monospace;">Trace: {{ event.correlation_id }}</span>
+          </div>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-secondary);">
+            Status snapshot: 
+            {% if event.status == 'VERIFIED' %}<span class="badge badge-verified">{{ event.status }}</span>
+            {% elif event.status == 'FAILED' %}<span class="badge badge-failed">{{ event.status }}</span>
+            {% else %}<span class="badge badge-warning">{{ event.status }}</span>
+            {% endif %}
+          </p>
+
+          {% if event.error_code %}
+            <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--danger); font-weight: 600;">
+              Error: {{ event.error_code }}
+            </p>
+          {% endif %}
+
+          {% if event.metadata_ %}
+            <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary); font-weight: 600; cursor: pointer;" onclick="toggleMeta('meta-{{ event.id }}')">
+              [Toggle Event Metadata]
+            </div>
+            <div id="meta-{{ event.id }}" class="timeline-metadata" style="display: block;">{{ event.metadata_ | tojson(indent=2) }}</div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    function toggleMeta(id) {
+      var el = document.getElementById(id);
+      if (el.style.display === "none") {
+        el.style.display = "block";
+      } else {
+        el.style.display = "none";
+      }
+    }
+  </script>
+
+{% else %}
+  <!-- List of all recent verification sessions -->
+  <h1>Audit Timeline Registry</h1>
+  <p class="lead">Append-only log of verification sessions. Inspect individual runs to view chronological state transitions.</p>
+
+  <div class="card">
+    <h3>Recent Verification Attempts</h3>
+    <p>Showing the 20 most recent verification sessions in the database.</p>
+
+    {% if verifications %}
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Session ID</th>
+              <th>User ID</th>
+              <th>Status</th>
+              <th>Initiated At</th>
+              <th>Completed At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in verifications %}
+              <tr>
+                <td style="font-family: monospace; font-size: 0.85rem;"><a href="/ui/audit-timeline?verification_id={{ v.id }}">{{ v.id }}</a></td>
+                <td style="font-weight: 600;">{{ v.user_id }}</td>
+                <td>
+                  {% if v.status == 'VERIFIED' %}
+                    <span class="badge badge-verified">{{ v.status }}</span>
+                  {% elif v.status == 'FAILED' %}
+                    <span class="badge badge-failed">{{ v.status }}</span>
+                  {% else %}
+                    <span class="badge badge-warning">{{ v.status }}</span>
+                  {% endif %}
+                </td>
+                <td style="font-size: 0.85rem;">{{ v.initiated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+                <td style="font-size: 0.85rem;">{{ v.completed_at.strftime('%Y-%m-%d %H:%M:%S UTC') if v.completed_at else 'Active...' }}</td>
+                <td>
+                  <a href="/ui/audit-timeline?verification_id={{ v.id }}" class="btn btn-secondary" style="padding: 0.25rem 0.65rem; font-size: 0.8rem;">View Timeline</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem 0; color: var(--text-secondary);">
+        <p>No verification attempts found in the database. Go start one to populate the log!</p>
+        <a href="/ui/verification/start" class="btn btn-primary">Start First Verification</a>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
