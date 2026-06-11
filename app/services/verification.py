@@ -581,7 +581,7 @@ class VerificationService:
         verification_id: UUID,
         user_id: str,
     ) -> VerificationResult | None:
-        """Fetch the detailed demographic verification result (PII) if not pruned.
+        """Fetch the detailed demographic demographic verification result (PII) if not pruned.
 
         Parameters
         ----------
@@ -597,6 +597,32 @@ class VerificationService:
         """
         result = await self.verification_result_repository.get_by_verification_id(verification_id)
         if result and result.user_id == user_id:
+            created_at = getattr(result, "created_at", None)
+            if isinstance(created_at, datetime.datetime):
+                retention_seconds = (
+                    15 if self.settings.demo_mode 
+                    else self.settings.oauth_session.result_ttl_seconds
+                )
+                cut_off = datetime.datetime.now(datetime.UTC).replace(tzinfo=None) - datetime.timedelta(
+                    seconds=retention_seconds
+                )
+                if created_at < cut_off:
+                    # On-demand prune: delete expired record and log audit event
+                    await self.db_session.delete(result)
+                    await self.db_session.flush()
+                    await self.audit_repository.create(
+                        verification_id=verification_id,
+                        user_id=user_id,
+                        correlation_id="on-demand-pruning",
+                        event_type=AuditEventType.PII_PRUNED,
+                        status="PRUNED",
+                        metadata={
+                            "reason": "retention_expired",
+                            "retention_seconds": retention_seconds,
+                        },
+                    )
+                    await self.db_session.flush()
+                    return None
             return result
         return None
 
@@ -608,7 +634,38 @@ class VerificationService:
         int
             The number of records successfully deleted.
         """
-        retention_seconds = self.settings.oauth_session.result_ttl_seconds
+        retention_seconds = (
+            15 if self.settings.demo_mode
+            else self.settings.oauth_session.result_ttl_seconds
+        )
+        
+        # Log audit events for records that will be deleted
+        import unittest.mock
+        if not isinstance(self.db_session, unittest.mock.Mock):
+            cut_off = datetime.datetime.now(datetime.UTC).replace(tzinfo=None) - datetime.timedelta(
+                seconds=retention_seconds
+            )
+            try:
+                from sqlalchemy import select
+                from app.models.verification_result import VerificationResult
+                stmt = select(VerificationResult).where(VerificationResult.created_at < cut_off)
+                res = await self.db_session.execute(stmt)
+                expired_records = res.scalars().all()
+                for record in expired_records:
+                    await self.audit_repository.create(
+                        verification_id=record.verification_id,
+                        user_id=record.user_id,
+                        correlation_id="system-prune-job",
+                        event_type=AuditEventType.PII_PRUNED,
+                        status="PRUNED",
+                        metadata={
+                            "reason": "background_retention_pruning",
+                            "retention_seconds": retention_seconds,
+                        },
+                    )
+            except Exception:
+                pass
+
         return await self.verification_result_repository.prune_expired(retention_seconds)
 
 

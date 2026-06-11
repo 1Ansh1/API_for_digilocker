@@ -141,6 +141,13 @@ async def ui_verification_result(
     result_res = await db.execute(result_stmt)
     result = result_res.scalar_one_or_none()
 
+    retained_until = None
+    settings = get_settings()
+    if result:
+        import datetime
+        retention_seconds = 15 if settings.demo_mode else settings.oauth_session.result_ttl_seconds
+        retained_until = result.created_at + datetime.timedelta(seconds=retention_seconds)
+
     return templates.TemplateResponse(
         request,
         "result.html",
@@ -148,6 +155,8 @@ async def ui_verification_result(
             "active_page": "start",
             "verification": verification,
             "result": result,
+            "demo_mode": settings.demo_mode,
+            "retained_until": retained_until,
         },
     )
 

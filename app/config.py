@@ -129,6 +129,7 @@ class Settings(BaseSettings):
     app_name: str = "digilocker-verification-api"
     environment: str = "development"
     debug: bool = True
+    demo_mode: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
 
@@ -209,6 +210,8 @@ class Settings(BaseSettings):
             data["environment"] = env_val
         if "debug" not in data and (debug_val := os.environ.get("DEBUG")):
             data["debug"] = debug_val.lower() in ("true", "1", "yes")
+        if "demo_mode" not in data and (demo_val := os.environ.get("APP_DEMO_MODE") or os.environ.get("DEMO_MODE")):
+            data["demo_mode"] = demo_val.lower() in ("true", "1", "yes")
 
         return data
 

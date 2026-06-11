@@ -1,0 +1,16 @@
+"filename", "language", "Python", "comment", "blank", "total"
+"c:\Users\Asus\Documents\Digi_API\tests\__init__.py", "Python", 0, 1, 1, 2
+"c:\Users\Asus\Documents\Digi_API\tests\conftest.py", "Python", 49, 19, 24, 92
+"c:\Users\Asus\Documents\Digi_API\tests\integration\__init__.py", "Python", 0, 1, 1, 2
+"c:\Users\Asus\Documents\Digi_API\tests\mock_provider\__init__.py", "Python", 0, 1, 1, 2
+"c:\Users\Asus\Documents\Digi_API\tests\unit\__init__.py", "Python", 0, 1, 1, 2
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_deps.py", "Python", 130, 17, 48, 195
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_health.py", "Python", 15, 7, 7, 29
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_persistence.py", "Python", 226, 35, 54, 315
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_provider.py", "Python", 148, 25, 50, 223
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_rate_limit.py", "Python", 89, 14, 23, 126
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_security.py", "Python", 41, 13, 22, 76
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_services.py", "Python", 221, 46, 69, 336
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_ui.py", "Python", 132, 12, 34, 178
+"c:\Users\Asus\Documents\Digi_API\tests\unit\test_verification.py", "Python", 767, 82, 175, 1024
+"Total", "-", 1818, 274, 510, 2602
