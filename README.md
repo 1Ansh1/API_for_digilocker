@@ -5,7 +5,7 @@ A production-grade FastAPI service for verifying user identity through DigiLocke
 ## Architecture
 
 - **FastAPI** with async lifespan management
-- **PostgreSQL** (asyncpg) for verification records and append-only audit trail
+- **MySQL** (aiomysql) for verification records and append-only audit trail
 - **Redis** for OAuth session state, distributed locks, rate limiting, and JWKS caching
 - **Pydantic Settings** for typed, validated configuration
 - **structlog** for structured JSON logging with PII redaction
@@ -47,7 +47,7 @@ docker/             # Dockerfile, docker-compose.yml
 ### Prerequisites
 
 - Python 3.11+
-- Docker & Docker Compose (for PostgreSQL + Redis)
+- Docker & Docker Compose (for MySQL + Redis)
 
 ### Setup
 
@@ -66,7 +66,7 @@ pip install -e ".[dev]"
 # Copy environment template
 cp .env.example .env
 
-# Start PostgreSQL and Redis
+# Start MySQL and Redis
 docker compose -f docker/docker-compose.yml up -d
 
 # Run database migrations
@@ -111,7 +111,7 @@ Key variables:
 | Variable | Description | Default |
 |---|---|---|
 | `APP__ENVIRONMENT` | `development`, `staging`, `production` | `development` |
-| `APP__DB__HOST` | PostgreSQL host | `localhost` |
+| `APP__DB__HOST` | MySQL host | `localhost` |
 | `APP__REDIS__HOST` | Redis host | `localhost` |
 | `APP__SECURITY__JWT_SECRET_KEY` | JWT signing key | `CHANGE-ME-IN-PRODUCTION` |
 | `APP__DIGILOCKER__CLIENT_ID` | DigiLocker API client ID | — |

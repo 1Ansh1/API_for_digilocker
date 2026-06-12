@@ -45,7 +45,7 @@
           <!-- Column 1: Temporary Storage (PII) -->
           <div id="pii-column" class="card" style="background-color: {% if result %}rgba(245, 158, 11, 0.02){% else %}rgba(16, 185, 129, 0.01){% endif %}; border-color: {% if result %}rgba(245, 158, 11, 0.25){% else %}rgba(16, 185, 129, 0.25){% endif %}; padding: 1.25rem; transition: all 0.5s ease;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;">
-              <h4 style="font-size: 0.95rem; margin: 0; color: {% if result %}var(--warning){% else %}var(--success){% endif %};">Temporary Storage (PostgreSQL)</h4>
+              <h4 style="font-size: 0.95rem; margin: 0; color: {% if result %}var(--warning){% else %}var(--success){% endif %};">Temporary Storage (MySQL)</h4>
               <span id="retention-badge" class="badge {% if result %}badge-warning{% else %}badge-success{% endif %}">
                 {% if result %}TEMP STORED{% else %}PRUNED{% endif %}
               </span>
@@ -104,7 +104,7 @@
                   <span class="badge badge-success" style="margin-bottom: 1rem; padding: 0.4rem 1rem; font-size: 0.85rem;">PRUNED &amp; DELETED</span>
                   <h4 style="color: var(--success); margin-bottom: 0.5rem;">PII Wiped From DB</h4>
                   <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                    Personally Identifiable Information (PII) has been permanently deleted from PostgreSQL in compliance with the data retention policy.
+                    Personally Identifiable Information (PII) has been permanently deleted from MySQL in compliance with the data retention policy.
                   </p>
                   <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.75rem; font-family: monospace; font-size: 0.75rem; color: var(--success); text-align: left;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
@@ -124,7 +124,7 @@
           <!-- Column 2: Permanent Proof Logs (Metadata) -->
           <div class="card" style="background-color: rgba(59, 130, 246, 0.02); border-color: rgba(59, 130, 246, 0.25); padding: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;">
-              <h4 style="font-size: 0.95rem; margin: 0; color: var(--primary);">Permanent Proofs (PostgreSQL)</h4>
+              <h4 style="font-size: 0.95rem; margin: 0; color: var(--primary);">Permanent Proofs (MySQL)</h4>
               <span class="badge badge-verified">SECURE HASHES</span>
             </div>
             
@@ -237,7 +237,7 @@
       const distance = targetTime - now;
       
       if (distance <= 0) {
-        if (countdownEl) countdownEl.innerHTML = "Pruning PII from PostgreSQL...";
+        if (countdownEl) countdownEl.innerHTML = "Pruning PII from MySQL...";
         if (progressFill) progressFill.style.width = "0%";
         
         pollPrunedStatus();
@@ -295,7 +295,7 @@
               <span class="badge badge-success" style="margin-bottom: 1rem; padding: 0.4rem 1rem; font-size: 0.85rem;">PRUNED &amp; DELETED</span>
               <h4 style="color: var(--success); margin-bottom: 0.5rem;">PII Successfully Wiped</h4>
               <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                Personally Identifiable Information (PII) has been permanently removed from the PostgreSQL database in compliance with the zero-persistent-storage policy.
+                Personally Identifiable Information (PII) has been permanently removed from the MySQL database in compliance with the zero-persistent-storage policy.
               </p>
               <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.75rem; font-family: monospace; font-size: 0.75rem; color: var(--success); text-align: left;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">

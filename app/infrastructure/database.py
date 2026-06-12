@@ -33,7 +33,7 @@ def create_async_engine(settings: Settings) -> AsyncEngine:
         Application configuration object.  The following attributes are read:
 
         * ``database_url`` – async connection string (must use the
-          ``postgresql+asyncpg://`` scheme).
+          ``mysql+aiomysql://`` scheme).
         * ``db_pool_size`` – core pool size (default handled by SQLAlchemy if
           not set on *settings*).
         * ``db_max_overflow`` – max overflow connections.
@@ -51,6 +51,7 @@ def create_async_engine(settings: Settings) -> AsyncEngine:
         pool_size=settings.db.pool_size,
         max_overflow=settings.db.max_overflow,
         pool_pre_ping=True,
+        connect_args={"ssl": False},
     )
 
 

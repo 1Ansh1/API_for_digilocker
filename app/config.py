@@ -31,10 +31,10 @@ __all__ = ["Settings", "get_settings"]
 
 
 class DatabaseSettings(BaseModel):
-    """PostgreSQL connection parameters."""
+    """MySQL connection parameters."""
 
     host: str = "localhost"
-    port: int = 5432
+    port: int = 3309
     user: str = "digilocker"
     password: str = "digilocker"
     name: str = "digilocker_dev"
@@ -44,9 +44,9 @@ class DatabaseSettings(BaseModel):
 
     @property
     def async_url(self) -> str:
-        """Build an async PostgreSQL DSN (asyncpg driver)."""
+        """Build an async MySQL DSN (aiomysql driver)."""
         return (
-            f"postgresql+asyncpg://{self.user}:{self.password}"
+            f"mysql+aiomysql://{self.user}:{self.password}"
             f"@{self.host}:{self.port}/{self.name}"
         )
 
@@ -175,11 +175,11 @@ class Settings(BaseSettings):
                         data[section][field] = val
                     break
 
-        set_nested("db", "host", ["APP_DB__HOST", "POSTGRES_HOST"])
-        set_nested("db", "port", ["APP_DB__PORT", "POSTGRES_PORT"], int)
-        set_nested("db", "user", ["APP_DB__USER", "POSTGRES_USER"])
-        set_nested("db", "password", ["APP_DB__PASSWORD", "POSTGRES_PASSWORD"])
-        set_nested("db", "name", ["APP_DB__NAME", "POSTGRES_DB"])
+        set_nested("db", "host", ["APP_DB__HOST", "MYSQL_HOST", "POSTGRES_HOST"])
+        set_nested("db", "port", ["APP_DB__PORT", "MYSQL_PORT", "POSTGRES_PORT"], int)
+        set_nested("db", "user", ["APP_DB__USER", "MYSQL_USER", "POSTGRES_USER"])
+        set_nested("db", "password", ["APP_DB__PASSWORD", "MYSQL_PASSWORD", "POSTGRES_PASSWORD"])
+        set_nested("db", "name", ["APP_DB__NAME", "MYSQL_DATABASE", "POSTGRES_DB"])
 
         set_nested("redis", "host", ["APP_REDIS__HOST", "REDIS_HOST"])
         set_nested("redis", "port", ["APP_REDIS__PORT", "REDIS_PORT"], int)

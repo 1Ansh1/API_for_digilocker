@@ -77,12 +77,11 @@ async def test_db_engine(app_settings: Settings) -> AsyncGenerator[AsyncEngine, 
 async def test_db_session(test_db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     """Yield an async session after truncating the tables."""
     async with test_db_engine.begin() as conn:
-        await conn.execute(
-            text(
-                "TRUNCATE TABLE verification_results, audit_events, verifications "
-                "RESTART IDENTITY CASCADE;"
-            )
-        )
+        await conn.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+        await conn.execute(text("TRUNCATE TABLE verification_results;"))
+        await conn.execute(text("TRUNCATE TABLE audit_events;"))
+        await conn.execute(text("TRUNCATE TABLE verifications;"))
+        await conn.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
 
     session = AsyncSession(bind=test_db_engine, expire_on_commit=False)
     yield session

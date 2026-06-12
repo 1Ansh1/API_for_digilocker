@@ -11,7 +11,7 @@
   <p>Tracing the redirection loops, cache operations, database logging, and API calls during a verification flow.</p>
 
   <pre style="background-color: #0b0f19; padding: 1.5rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; line-height: 1.4; color: #38bdf8; overflow-x: auto; border: 1px solid var(--card-border);">
-[Browser]             [FastAPI Backend]            [Redis Cache]         [PostgreSQL DB]          [DigiLocker IdP]
+[Browser]             [FastAPI Backend]            [Redis Cache]         [MySQL DB]               [DigiLocker IdP]
     |                         |                          |                      |                      |
     |-- 1. POST /initiate ---&gt;|                          |                      |                      |
     |                         |-- 2. Check lock --------&gt;|                      |                      |
@@ -94,7 +94,7 @@
     <span class="kv-value" style="text-align: left;">Implements rate limiting sliding windows, acts as the temporary session store for PKCE parameters, and maintains concurrency locks to prevent double-initiations.</span>
   </div>
   <div class="kv-item" style="align-items: flex-start;">
-    <span class="kv-key" style="min-width: 150px; font-weight: bold; color: var(--primary);">PostgreSQL DB</span>
+    <span class="kv-key" style="min-width: 150px; font-weight: bold; color: var(--primary);">MySQL DB</span>
     <span class="kv-value" style="text-align: left;">Provides persistent storage for core session states, append-only logs of auditable system actions (audit_events), and temporary demographic details (verification_results).</span>
   </div>
 </div>

@@ -1014,6 +1014,7 @@ async def test_prune_expired_results(
     test_settings: Settings,
 ) -> None:
     """Verify prune_expired_results delegates to repository with correct retention TTL."""
+    test_settings.demo_mode = False
     test_settings.oauth_session.result_ttl_seconds = 600
     mock_verification_result_repo.prune_expired = AsyncMock(return_value=5)
 

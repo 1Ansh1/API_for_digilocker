@@ -66,6 +66,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         echo=settings.db.echo,
         pool_size=settings.db.pool_size,
         max_overflow=settings.db.max_overflow,
+        connect_args={"ssl": False},
     )
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     app.state.db_engine = engine

@@ -1,26 +1,28 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: digilocker-postgres
+  mysql:
+    image: mysql:8.0
+    container_name: digilocker-mysql
     restart: unless-stopped
     env_file:
       - ../.env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-digilocker}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
-      POSTGRES_DB: ${POSTGRES_DB:-digilocker_verification}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-changeme_in_production}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-digilocker_verification}
+      MYSQL_USER: ${MYSQL_USER:-digilocker}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme_in_production}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MYSQL_PORT:-3309}:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-digilocker} -d ${POSTGRES_DB:-digilocker_verification}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER:-digilocker}", "-p${MYSQL_PASSWORD:-changeme_in_production}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 15s
 
   redis:
     image: redis:7-alpine
@@ -43,7 +45,7 @@ services:
       start_period: 5s
 
 volumes:
-  postgres_data:
+  mysql_data:
     driver: local
   redis_data:
     driver: local

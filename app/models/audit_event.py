@@ -3,10 +3,10 @@
 from datetime import datetime
 from enum import StrEnum
 from typing import Any
+import uuid
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import ForeignKey, String, text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -36,7 +36,7 @@ class AuditEvent(Base):
 
     id: Mapped[UUID] = mapped_column(
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        default=uuid.uuid4,
     )
     verification_id: Mapped[UUID] = mapped_column(
         ForeignKey("verifications.id"),
@@ -68,9 +68,9 @@ class AuditEvent(Base):
     )
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata",
-        JSONB,
+        JSON,
         nullable=False,
-        server_default=text("'{}'::jsonb"),
+        default=dict,
     )
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,

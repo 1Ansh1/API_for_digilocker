@@ -1,6 +1,7 @@
 """VerificationResult ORM model for storing sensitive verified demographics."""
 
 from datetime import datetime
+import uuid
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, text
@@ -16,7 +17,7 @@ class VerificationResult(Base):
 
     id: Mapped[UUID] = mapped_column(
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        default=uuid.uuid4,
     )
     verification_id: Mapped[UUID] = mapped_column(
         ForeignKey("verifications.id", ondelete="CASCADE"),

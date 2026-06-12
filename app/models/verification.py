@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from enum import StrEnum
+import uuid
 from uuid import UUID
 
 from sqlalchemy import Index, String, Text, text
@@ -29,7 +30,7 @@ class Verification(TimestampMixin, Base):
 
     id: Mapped[UUID] = mapped_column(
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        default=uuid.uuid4,
     )
     user_id: Mapped[str] = mapped_column(
         String(255),
